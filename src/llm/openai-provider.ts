@@ -20,14 +20,28 @@ export class OpenAIProvider implements LLMProvider {
   private baseUrl: string;
 
   constructor(
-    apiKey: string,
-    defaultModel: string = DEFAULT_MODEL,
-    baseUrl: string = OPENAI_API_URL,
+  apiKey: string,
+  defaultModel: string = DEFAULT_MODEL,
+  baseUrl: string = OPENAI_API_URL,
+) {
+  this.apiKey = apiKey;
+  this.defaultModel = defaultModel;
+
+  const normalized = baseUrl.replace(/\/+$/, "");
+
+  if (normalized === "https://openrouter.ai/api/v1") {
+    this.baseUrl = "https://openrouter.ai/api/v1/chat/completions";
+  } else if (
+    normalized === "https://api.openai.com/v1" ||
+    normalized === "https://api.openai.com/v1/chat/completions"
   ) {
-    this.apiKey = apiKey;
-    this.defaultModel = defaultModel;
-    this.baseUrl = baseUrl;
+    this.baseUrl = "https://api.openai.com/v1/chat/completions";
+  } else {
+    this.baseUrl = normalized.endsWith("/chat/completions")
+      ? normalized
+      : `${normalized}/chat/completions`;
   }
+}
 
   getCurrentModel(): string {
     return this.defaultModel;
